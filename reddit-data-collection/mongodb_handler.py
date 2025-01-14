@@ -66,6 +66,38 @@ def insert_reddit_post(post_data):
     finally:
         client.close()
 
+def export_mongodb_as_json():
+    try:
+        client = pymongo.MongoClient(os.environ['MONGODB_URI'])
+        db = client[os.environ['MONGODB_DATABASE']]
+        collection = db[os.environ['MONGODB_COLLECTION']]
+        
+
+        cursor = collection.find({}, {'_id': 0})  
+        data = list(cursor)
+        
+        # Create output directory if it doesn't exist
+        output_dir = '../data'
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+        
+        # Create filename with timestamp
+        filename = f"{output_dir}/reddit_data_2025_01_13.json"
+        
+        # Write to JSON file
+        import json
+        with open(filename, 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=4)
+            
+        print(f"Successfully exported {len(data)} documents to {filename}")
+        return filename
+        
+    except Exception as e:
+        print(f"Error exporting MongoDB data to JSON: {e}")
+        return None
+    finally:
+        client.close()
+
 if __name__ == "__main__":
     '''use this file to test connection and database creation'''
     verify_connection()
