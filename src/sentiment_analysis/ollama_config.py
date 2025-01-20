@@ -1,6 +1,7 @@
 from langchain_ollama import ChatOllama
-import json
 from langchain_core.messages import HumanMessage, SystemMessage
+
+# this is used to test if ollama is correctly configured
 
 local_llm = "llama3.2"
 llm = ChatOllama(
