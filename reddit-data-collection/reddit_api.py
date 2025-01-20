@@ -16,7 +16,9 @@ def process_comment(comment):
         "id": comment.id,
         "body": comment.body,
         "created_UTC": comment.created_utc,
-        "replies": [process_comment(reply) for reply in comment.replies if isinstance(reply, praw.models.Comment)]
+        "replies": [process_comment(reply) for reply in comment.replies if isinstance(reply, praw.models.Comment)],
+        "score": comment.score,
+        "parent_id": comment.parent_id[3:],
     }
 
 def get_thelastofus_posts():
