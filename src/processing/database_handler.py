@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from pymongo.errors import ConnectionFailure
 import json
 
-load_dotenv("../.env")
+load_dotenv("../../.env")
 
 def verify_connection():
     try: 
@@ -58,13 +58,10 @@ def export_mongodb_as_json():
         cursor = collection.find({}, {'_id': 0})  
         data = list(cursor)
         
-        # Create output directory if it doesn't exist
-        output_dir = '../data'
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
+        output_dir = '../../data/raw'
         
         # Create filename with timestamp
-        filename = f"{output_dir}/reddit_data_2025_01_19.json"
+        filename = f"{output_dir}/reddit_data.json"
         
         # Write to JSON file
         with open(filename, 'w', encoding='utf-8') as f:

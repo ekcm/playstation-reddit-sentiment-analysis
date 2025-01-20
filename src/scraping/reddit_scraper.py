@@ -1,9 +1,9 @@
 import praw
 import os
 from dotenv import load_dotenv
-from mongodb_handler import insert_reddit_post, check_post_exists
+from database_handler import insert_reddit_post, check_post_exists
 
-load_dotenv("../.env")
+load_dotenv("../../.env")
 
 reddit = praw.Reddit(
     client_id=os.environ['CLIENT_ID'],

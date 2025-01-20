@@ -3,7 +3,7 @@ import os
 from dotenv import load_dotenv
 from pymongo.errors import ConnectionFailure
 
-load_dotenv("../.env")
+load_dotenv("../../.env")
 
 def verify_connection():
     try: 

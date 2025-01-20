@@ -122,8 +122,8 @@ def save_to_json(data, output_path):
         print(f"Error saving data to {output_path}: {str(e)}")
 
 if __name__ == "__main__":
-    json_file_path = "../data/reddit_data_2025_01_13.json"
-    output_path = "../data/processed_reddit_data.json"
+    json_file_path = "../../data/raw/reddit_data.json"
+    output_path = "../../data/processed/processed_reddit_data.json"
     
     retrieved_data = import_reddit_data(json_file_path)
     if retrieved_data:
