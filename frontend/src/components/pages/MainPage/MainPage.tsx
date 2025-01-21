@@ -35,6 +35,8 @@ interface KeywordResponse {
 type Tab = 'sentiment' | 'keywords' | 'posts';
 type KeywordSentiment = 'all' | 'positive' | 'negative' | 'neutral';
 
+const BASE_URL = 'http://0.0.0.0:8000';
+
 const MainPage = () => {
   const [loading, setLoading] = useState(false);
   const [sentimentData, setSentimentData] = useState<SentimentResponse | null>(null);
@@ -45,7 +47,7 @@ const MainPage = () => {
   const fetchSentimentData = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:8000/sentiment-analysis');
+      const response = await fetch(`${BASE_URL}/sentiment-analysis`);
       const data = await response.json();
       setSentimentData(data);
     } catch (error) {
@@ -55,12 +57,13 @@ const MainPage = () => {
     }
   };
 
-  const fetchKeywordData = async () => {
+  const fetchKeywordData = async (sentiment?: KeywordSentiment) => {
     try {
       setLoading(true);
-      const url = selectedSentiment === 'all' 
-        ? 'http://localhost:8000/keywords'
-        : `http://localhost:8000/keywords?sentiment=${selectedSentiment}`;
+      const sentimentToUse = sentiment || selectedSentiment;
+      const url = sentimentToUse === 'all' 
+        ? `${BASE_URL}/keywords`
+        : `${BASE_URL}/keywords?sentiment=${sentimentToUse}`;
       const response = await fetch(url);
       const data = await response.json();
       setKeywordData(data);
@@ -159,7 +162,7 @@ const MainPage = () => {
               <div /> {/* Empty div for spacing */}
               <div className="flex justify-center">
                 <Button 
-                  onClick={fetchKeywordData} 
+                  onClick={() => fetchKeywordData()} 
                   disabled={loading}
                 >
                   {loading ? "Loading..." : "Fetch Keyword Data"}
@@ -170,9 +173,9 @@ const MainPage = () => {
                   <Button 
                     variant={selectedSentiment === 'all' ? 'default' : 'outline'} 
                     className="rounded-r-none"
-                    onClick={() => {
+                    onClick={async () => {
                       setSelectedSentiment('all');
-                      setKeywordData(null);
+                      await fetchKeywordData('all');
                     }}
                   >
                     All
@@ -180,9 +183,9 @@ const MainPage = () => {
                   <Button 
                     variant={selectedSentiment === 'positive' ? 'default' : 'outline'} 
                     className="rounded-none border-x-0"
-                    onClick={() => {
+                    onClick={async () => {
                       setSelectedSentiment('positive');
-                      setKeywordData(null);
+                      await fetchKeywordData('positive');
                     }}
                   >
                     Positive
@@ -190,9 +193,9 @@ const MainPage = () => {
                   <Button 
                     variant={selectedSentiment === 'negative' ? 'default' : 'outline'} 
                     className="rounded-l-none"
-                    onClick={() => {
+                    onClick={async () => {
                       setSelectedSentiment('negative');
-                      setKeywordData(null);
+                      await fetchKeywordData('negative');
                     }}
                   >
                     Negative
