@@ -32,6 +32,20 @@ interface KeywordResponse {
   total_keywords: number;
 }
 
+interface Post {
+  title: string;
+  score: number;
+  sentiment: string;
+  created_UTC: number;
+  keywords: string[];
+  url: string;
+}
+
+interface TopPostsResponse {
+  posts: Post[];
+  total_posts: number;
+}
+
 type Tab = 'sentiment' | 'keywords' | 'posts';
 type KeywordSentiment = 'all' | 'positive' | 'negative' | 'neutral';
 
@@ -41,6 +55,7 @@ const MainPage = () => {
   const [loading, setLoading] = useState(false);
   const [sentimentData, setSentimentData] = useState<SentimentResponse | null>(null);
   const [keywordData, setKeywordData] = useState<KeywordResponse | null>(null);
+  const [topPosts, setTopPosts] = useState<TopPostsResponse | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>('sentiment');
   const [selectedSentiment, setSelectedSentiment] = useState<KeywordSentiment>('all');
 
@@ -69,6 +84,19 @@ const MainPage = () => {
       setKeywordData(data);
     } catch (error) {
       console.error('Error fetching keyword data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchTopPosts = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${BASE_URL}/top-posts`);
+      const data = await response.json();
+      setTopPosts(data);
+    } catch (error) {
+      console.error('Error fetching top posts:', error);
     } finally {
       setLoading(false);
     }
@@ -240,6 +268,72 @@ const MainPage = () => {
                     />
                   </BarChart>
                 </ResponsiveContainer>
+              </div>
+            )}
+          </>
+        );
+      case 'posts':
+        return (
+          <>
+            <Button 
+              onClick={fetchTopPosts} 
+              disabled={loading}
+              className="mb-4"
+            >
+              {loading ? "Loading..." : "Fetch Top Posts"}
+            </Button>
+            {topPosts && (
+              <div className="w-full mt-4 space-y-4 max-h-[600px] overflow-y-auto">
+                {topPosts.posts.map((post, index) => (
+                  <div 
+                    key={index}
+                    className="p-4 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors"
+                  >
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-medium text-gray-900">{post.title}</h3>
+                      <span className={`px-3 py-1 rounded-full text-sm ${
+                        post.sentiment === 'positive' ? 'bg-green-100 text-green-800' :
+                        post.sentiment === 'negative' ? 'bg-red-100 text-red-800' :
+                        'bg-blue-100 text-blue-800'
+                      }`}>
+                        {post.sentiment}
+                      </span>
+                    </div>
+                    <div className="mt-2 flex items-center text-sm text-gray-500 space-x-4">
+                      <span>Score: {post.score}</span>
+                      <span>•</span>
+                      <span>{new Date(post.created_UTC * 1000).toLocaleDateString()}</span>
+                    </div>
+                    <div className="mt-4 flex justify-between items-end">
+                      {post.keywords.length > 0 && (
+                        <div className="flex flex-wrap gap-2 flex-1">
+                          {post.keywords.map((keyword, kidx) => (
+                            <span 
+                              key={kidx}
+                              className="px-2 py-1 bg-gray-100 rounded-full text-xs text-gray-600"
+                            >
+                              {keyword}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="ml-4 whitespace-nowrap"
+                        asChild
+                      >
+                        <a 
+                          href={post.url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                        >
+                          View on Reddit
+                        </a>
+                      </Button>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </>
