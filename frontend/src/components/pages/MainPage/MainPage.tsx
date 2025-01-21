@@ -2,10 +2,30 @@
 
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
+
+interface SentimentDataPoint {
+  date: string;
+  positive: number;
+  negative: number;
+  neutral: number;
+  others: number;
+}
+
+interface SentimentResponse {
+  timeline: SentimentDataPoint[];
+  overall: {
+    positive: number;
+    negative: number;
+    neutral: number;
+    others: number;
+    total: number;
+  };
+}
 
 const MainPage = () => {
   const [loading, setLoading] = useState(false);
-  const [sentimentData, setSentimentData] = useState(null);
+  const [sentimentData, setSentimentData] = useState<SentimentResponse | null>(null);
 
   const fetchSentimentData = async () => {
     try {
@@ -30,7 +50,7 @@ const MainPage = () => {
             <Button variant="outline" className="rounded-none border-x-0">Keyword Frequency</Button>
             <Button variant="outline" className="rounded-l-none">Top Posts</Button>
           </div>
-          <div className="bg-white p-4 rounded-md shadow-sm w-full flex-1 flex flex-col items-center justify-center">
+          <div className="bg-white p-4 rounded-md shadow-sm w-full flex-1 flex flex-col items-center">
             <Button 
               onClick={fetchSentimentData} 
               disabled={loading}
@@ -39,10 +59,61 @@ const MainPage = () => {
               {loading ? "Loading..." : "Fetch Sentiment Data"}
             </Button>
             {sentimentData && (
-              <div className="text-center">
-                <pre className="text-left">
-                  {JSON.stringify(sentimentData, null, 2)}
-                </pre>
+              <div className="w-full h-[500px] mt-4">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart
+                    data={sentimentData.timeline}
+                    margin={{
+                      top: 10,
+                      right: 30,
+                      left: 0,
+                      bottom: 0,
+                    }}
+                  >
+                    <XAxis 
+                      dataKey="date" 
+                      stroke="#888888"
+                      fontSize={12}
+                    />
+                    <YAxis
+                      stroke="#888888"
+                      fontSize={12}
+                    />
+                    <Tooltip />
+                    <Area
+                      type="monotone"
+                      dataKey="positive"
+                      stackId="1"
+                      stroke="#4ade80"
+                      fill="#4ade80"
+                      fillOpacity={0.5}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="negative"
+                      stackId="1"
+                      stroke="#f87171"
+                      fill="#f87171"
+                      fillOpacity={0.5}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="neutral"
+                      stackId="1"
+                      stroke="#60a5fa"
+                      fill="#60a5fa"
+                      fillOpacity={0.5}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="others"
+                      stackId="1"
+                      stroke="#a855f7"
+                      fill="#a855f7"
+                      fillOpacity={0.5}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
               </div>
             )}
           </div>
