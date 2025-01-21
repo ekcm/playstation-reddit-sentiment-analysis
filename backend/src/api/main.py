@@ -6,9 +6,19 @@ from enum import Enum
 from collections import Counter
 from pathlib import Path
 from functools import lru_cache
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(
     docs="/",
+)
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # Frontend URL
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 class Sentiment(str, Enum):
@@ -52,28 +62,31 @@ def parse_date(date_str: Optional[str], is_end_date: bool = False) -> Optional[f
 
 @app.get("/sentiment-analysis")
 async def get_sentiment_analysis(
-    start_date: Optional[str] = None,
-    end_date: Optional[str] = None
+    start_timestamp: Optional[float] = None,
+    end_timestamp: Optional[float] = None
 ) -> Dict:
     """
     Get sentiment analysis with optional date range filtering.
+    Returns daily sentiment counts for graphing.
     
     Args:
-        start_date: Optional start date in YYYY-MM-DD format
-        end_date: Optional end date in YYYY-MM-DD format
+        start_timestamp: Optional Unix timestamp for start date
+        end_timestamp: Optional Unix timestamp for end date
     
     Returns:
-        Dict containing sentiment counts and date range info
+        Dict containing:
+        - timeline: List of daily sentiment counts
+        - overall: Total sentiment counts for the period
     """
-    # Parse dates
-    start_timestamp = parse_date(start_date)
-    end_timestamp = parse_date(end_date, is_end_date=True)
-    
     # Load data
     data = load_sentiment_data()
     
-    # Count sentiments within date range
-    sentiment_counter = Counter()
+    # Initialize counters
+    daily_sentiments = {}
+    overall_counter = Counter()
+    
+    # Define standard sentiment values
+    standard_sentiments = [Sentiment.POSITIVE, Sentiment.NEGATIVE, Sentiment.NEUTRAL, "others"]
     
     for item in data:
         created_time = item['created_UTC']
@@ -83,19 +96,34 @@ async def get_sentiment_analysis(
            (end_timestamp and created_time > end_timestamp):
             continue
             
-        sentiment_counter[item['sentiment']] += 1
+        # Convert timestamp to date string for grouping
+        date_str = datetime.fromtimestamp(created_time).strftime('%Y-%m-%d')
+        
+        # Initialize counter for new dates
+        if date_str not in daily_sentiments:
+            daily_sentiments[date_str] = {
+                'date': date_str,
+                **{sentiment: 0 for sentiment in standard_sentiments}
+            }
+        
+        # Categorize sentiment
+        sentiment = item['sentiment']
+        if sentiment not in [Sentiment.POSITIVE, Sentiment.NEGATIVE, Sentiment.NEUTRAL]:
+            sentiment = "others"
+        
+        # Update both counters
+        daily_sentiments[date_str][sentiment] += 1
+        overall_counter[sentiment] += 1
+    
+    # Convert daily sentiments to sorted list
+    timeline = sorted(daily_sentiments.values(), key=lambda x: x['date'])
     
     return {
-        "date_range": {
-            "start_date": start_date,
-            "end_date": end_date
-        },
-        "sentiment_counts": {
-            Sentiment.POSITIVE: sentiment_counter[Sentiment.POSITIVE],
-            Sentiment.NEGATIVE: sentiment_counter[Sentiment.NEGATIVE],
-            Sentiment.NEUTRAL: sentiment_counter[Sentiment.NEUTRAL]
-        },
-        "total": sum(sentiment_counter.values())
+        "timeline": timeline,
+        "overall": {
+            **{sentiment: overall_counter[sentiment] for sentiment in standard_sentiments},
+            "total": sum(overall_counter.values())
+        }
     }
 
 @app.get("/keywords")
