@@ -127,12 +127,13 @@ async def get_sentiment_analysis(
     }
 
 @app.get("/keywords")
-async def get_top_keywords_frequencies(sentiment: str) -> Dict:
+async def get_top_keywords_frequencies(sentiment: Optional[str] = None) -> Dict:
     """
-    Get keywords for a specific sentiment, sorted by frequency.
+    Get keywords frequencies. If sentiment is specified, filter by that sentiment.
+    Otherwise, return frequencies across all sentiments.
     
     Args:
-        sentiment: Sentiment to filter by (positive/negative/neutral)
+        sentiment: Optional sentiment to filter by (positive/negative/neutral)
     
     Returns:
         Dict containing sorted keywords and their frequencies
@@ -145,7 +146,8 @@ async def get_top_keywords_frequencies(sentiment: str) -> Dict:
     keyword_counter = Counter()
     
     for item in data:
-        if item['sentiment'] == sentiment:
+        # If sentiment is specified, only count keywords for that sentiment
+        if sentiment is None or item['sentiment'] == sentiment:
             keyword_counter.update(item['keywords'])
     
     # Sort keywords by frequency in descending order
@@ -155,7 +157,7 @@ async def get_top_keywords_frequencies(sentiment: str) -> Dict:
     ]
     
     return {
-        "sentiment": sentiment,
+        "sentiment": sentiment if sentiment else "all",
         "keywords": sorted_keywords,
         "total_keywords": len(sorted_keywords)
     }
