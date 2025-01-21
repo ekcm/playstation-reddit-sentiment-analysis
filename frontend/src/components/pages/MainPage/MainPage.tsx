@@ -23,9 +23,12 @@ interface SentimentResponse {
   };
 }
 
+type Tab = 'sentiment' | 'keywords' | 'posts';
+
 const MainPage = () => {
   const [loading, setLoading] = useState(false);
   const [sentimentData, setSentimentData] = useState<SentimentResponse | null>(null);
+  const [activeTab, setActiveTab] = useState<Tab>('sentiment');
 
   const fetchSentimentData = async () => {
     try {
@@ -41,16 +44,11 @@ const MainPage = () => {
     }
   };
 
-  return (
-    <div>
-      <div className="flex justify-center items-center min-h-[calc(100vh-8rem)]">
-        <div className="flex flex-col items-center gap-8 bg-gray-50 p-8 rounded-lg shadow-sm w-3/4 h-[80vh]">
-          <div className="inline-flex rounded-md shadow-sm" role="group">
-            <Button variant="outline" className="rounded-r-none">Sentiment Analysis</Button>
-            <Button variant="outline" className="rounded-none border-x-0">Keyword Frequency</Button>
-            <Button variant="outline" className="rounded-l-none">Top Posts</Button>
-          </div>
-          <div className="bg-white p-4 rounded-md shadow-sm w-full flex-1 flex flex-col items-center">
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'sentiment':
+        return (
+          <>
             <Button 
               onClick={fetchSentimentData} 
               disabled={loading}
@@ -116,6 +114,42 @@ const MainPage = () => {
                 </ResponsiveContainer>
               </div>
             )}
+          </>
+        );
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div>
+      <div className="flex justify-center items-center min-h-[calc(100vh-8rem)]">
+        <div className="flex flex-col items-center gap-8 bg-gray-50 p-8 rounded-lg shadow-sm w-3/4 h-[80vh]">
+          <div className="inline-flex rounded-md shadow-sm" role="group">
+            <Button 
+              variant={activeTab === 'sentiment' ? 'default' : 'outline'} 
+              className="rounded-r-none"
+              onClick={() => setActiveTab('sentiment')}
+            >
+              Sentiment Analysis
+            </Button>
+            <Button 
+              variant={activeTab === 'keywords' ? 'default' : 'outline'} 
+              className="rounded-none border-x-0"
+              onClick={() => setActiveTab('keywords')}
+            >
+              Keyword Frequency
+            </Button>
+            <Button 
+              variant={activeTab === 'posts' ? 'default' : 'outline'} 
+              className="rounded-l-none"
+              onClick={() => setActiveTab('posts')}
+            >
+              Top Posts
+            </Button>
+          </div>
+          <div className="bg-white p-4 rounded-md shadow-sm w-full flex-1 flex flex-col items-center">
+            {renderContent()}
           </div>
         </div>
       </div>
