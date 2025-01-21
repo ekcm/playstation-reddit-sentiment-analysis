@@ -49,12 +49,9 @@ def parse_date(date_str: Optional[str], is_end_date: bool = False) -> Optional[f
             detail=f"Invalid date format. Please use {DATE_FORMAT}"
         )
 
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
 
 @app.get("/sentiment-analysis")
-async def sentiment_analysis(
+async def get_sentiment_analysis(
     start_date: Optional[str] = None,
     end_date: Optional[str] = None
 ) -> Dict:
@@ -99,6 +96,66 @@ async def sentiment_analysis(
             Sentiment.NEUTRAL: sentiment_counter[Sentiment.NEUTRAL]
         },
         "total": sum(sentiment_counter.values())
+    }
+
+@app.get("/keywords")
+async def get_top_keywords_frequencies(sentiment: str) -> Dict:
+    """
+    Get keywords for a specific sentiment, sorted by frequency.
+    
+    Args:
+        sentiment: Sentiment to filter by (positive/negative/neutral)
+    
+    Returns:
+        Dict containing sorted keywords and their frequencies
+    """
+    
+    # Load data
+    data = load_sentiment_data()
+    
+    # Count keyword frequencies
+    keyword_counter = Counter()
+    
+    for item in data:
+        if item['sentiment'] == sentiment:
+            keyword_counter.update(item['keywords'])
+    
+    # Sort keywords by frequency in descending order
+    sorted_keywords = [
+        {"keyword": kw, "frequency": freq}
+        for kw, freq in keyword_counter.most_common()
+    ]
+    
+    return {
+        "sentiment": sentiment,
+        "keywords": sorted_keywords,
+        "total_keywords": len(sorted_keywords)
+    }
+
+@app.get("/top-posts")
+async def get_top_posts() -> Dict:
+    """
+    Get all posts sorted by score in descending order.
+    
+    Returns:
+        Dict containing sorted posts and total count
+    """
+    # Load data
+    data = load_sentiment_data()
+    
+    # Filter for posts (items with 'title' field)
+    posts = [item for item in data if 'title' in item]
+    
+    # Sort posts by score in descending order
+    sorted_posts = sorted(
+        posts,
+        key=lambda x: x['score'],
+        reverse=True
+    )
+    
+    return {
+        "posts": sorted_posts,
+        "total_posts": len(sorted_posts)
     }
 
 if __name__ == "__main__":
