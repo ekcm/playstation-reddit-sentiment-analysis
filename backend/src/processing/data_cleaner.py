@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 
 def retrieve_comments_body(json_data):
     """
@@ -98,7 +99,7 @@ def import_reddit_data(json_file_path):
             json_data = json.load(file)
             # Debug print to see the structure
             print("JSON Data Keys:", json_data.keys() if isinstance(json_data, dict) else "Data is a list")
-            return retrieve_comments_body(json_data)
+            return json_data
     except FileNotFoundError:
         print(f"Error: File not found at {json_file_path}")
         return None
@@ -122,10 +123,29 @@ def save_to_json(data, output_path):
         print(f"Error saving data to {output_path}: {str(e)}")
 
 if __name__ == "__main__":
-    json_file_path = "../../data/raw/reddit_data.json"
-    output_path = "../../data/processed/processed_reddit_data.json"
+    # Get the backend directory path
+    backend_dir = Path(__file__).resolve().parents[2]
     
-    retrieved_data = import_reddit_data(json_file_path)
-    if retrieved_data:
-        save_to_json(retrieved_data, output_path)
-        print(f"Found {len(retrieved_data['post_titles'])} posts and {len(retrieved_data['comment_bodies'])} comments")
+    # Define data directories
+    data_dir = backend_dir / "data"
+    raw_dir = data_dir / "raw"
+    processed_dir = data_dir / "processed"
+    
+    # Create directories if they don't exist
+    raw_dir.mkdir(parents=True, exist_ok=True)
+    processed_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Define file paths
+    json_file_path = raw_dir / "reddit_data.json"
+    output_path = processed_dir / "processed_reddit_data.json"
+    
+    try:
+        data = import_reddit_data(str(json_file_path))
+        if data is not None:
+            processed_data = retrieve_comments_body(data)
+            save_to_json(processed_data, str(output_path))
+            print(f"Data processed successfully and saved to {output_path}")
+        else:
+            print("No data to process.")
+    except Exception as e:
+        print(f"Error: {str(e)}")

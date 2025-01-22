@@ -2,8 +2,12 @@ import praw
 import os
 from dotenv import load_dotenv
 from database_handler import insert_reddit_post, check_post_exists
+import sys
+from pathlib import Path
 
-load_dotenv("../../.env")
+# Get the backend directory
+backend_dir = Path(__file__).resolve().parents[2]
+load_dotenv(backend_dir / ".env")
 
 reddit = praw.Reddit(
     client_id=os.environ['CLIENT_ID'],
@@ -26,7 +30,7 @@ def get_thelastofus_posts():
     subreddit = reddit.subreddit("thelastofus")
     query = 'review' # Look for posts that include the word 'review'
 
-    for submission in subreddit.search(query, sort='relevance', time_filter='all', limit=15):
+    for submission in subreddit.search(query, sort='relevance', time_filter='all', limit=1):
         reddit_post = {
             "id": submission.id,
             "title": submission.title,

@@ -89,7 +89,7 @@ async def get_sentiment_analysis(
     standard_sentiments = [Sentiment.POSITIVE, Sentiment.NEGATIVE, Sentiment.NEUTRAL, "others"]
     
     for item in data:
-        created_time = item['created_UTC']
+        created_time = item['created_utc']
         
         # Skip if outside date range
         if (start_timestamp and created_time < start_timestamp) or \

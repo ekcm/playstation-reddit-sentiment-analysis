@@ -3,8 +3,19 @@ import os
 from dotenv import load_dotenv
 from pymongo.errors import ConnectionFailure
 import json
+from pathlib import Path
+from bson import ObjectId
 
-load_dotenv("../../.env")
+# Get the backend directory path
+backend_dir = Path(__file__).resolve().parents[2]
+load_dotenv(backend_dir / ".env")
+
+# Custom JSON encoder to handle ObjectId
+class MongoJSONEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, ObjectId):
+            return str(obj)
+        return super().default(obj)
 
 def verify_connection():
     try: 
@@ -51,35 +62,27 @@ def retrieve_reddit_posts():
 
 def export_mongodb_as_json():
     try:
-        client = pymongo.MongoClient(os.environ['MONGODB_URI'])
-        db = client[os.environ['MONGODB_DATABASE']]
-        collection = db[os.environ['MONGODB_COLLECTION']]
+        # Get data directories
+        data_dir = backend_dir / "data"
+        raw_dir = data_dir / "raw"
         
-        cursor = collection.find({}, {'_id': 0})  
-        data = list(cursor)
+        # Create directories if they don't exist
+        raw_dir.mkdir(parents=True, exist_ok=True)
         
-        output_dir = '../../data/raw'
+        # Get posts from MongoDB
+        posts = retrieve_reddit_posts()
         
-        # Create filename with timestamp
-        filename = f"{output_dir}/reddit_data.json"
-        
-        # Write to JSON file
-        with open(filename, 'w', encoding='utf-8') as f:
-            json.dump(data, f, ensure_ascii=False, indent=4)
+        if posts:
+            # Save to JSON file using custom encoder
+            output_file = raw_dir / "reddit_data.json"
+            with open(output_file, 'w') as f:
+                json.dump(posts, f, indent=2, cls=MongoJSONEncoder)
+            print(f"Successfully exported {len(posts)} posts to {output_file}")
+        else:
+            print("No posts found to export")
             
-        print(f"Successfully exported {len(data)} documents to {filename}")
-        return filename
-        
     except Exception as e:
-        print(f"Error exporting MongoDB data to JSON: {e}")
-        return None
-    finally:
-        client.close()
+        print(f"Error exporting data: {str(e)}")
 
 if __name__ == "__main__":
-    # verify_connection()
-    # verify_database()
-    # retrieved_posts = retrieve_reddit_posts()
-    # print(retrieved_posts)
-
     export_mongodb_as_json()

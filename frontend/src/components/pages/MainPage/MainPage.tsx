@@ -36,7 +36,7 @@ interface Post {
   title: string;
   score: number;
   sentiment: string;
-  created_UTC: number;
+  created_utc: number;
   keywords: string[];
   url: string;
 }
@@ -302,7 +302,7 @@ const MainPage = () => {
                     <div className="mt-2 flex items-center text-sm text-gray-500 space-x-4">
                       <span>Score: {post.score}</span>
                       <span>•</span>
-                      <span>{new Date(post.created_UTC * 1000).toLocaleDateString()}</span>
+                      <span>{new Date(post.created_utc * 1000).toLocaleDateString()}</span>
                     </div>
                     <div className="mt-4 flex justify-between items-end">
                       {post.keywords.length > 0 && (
