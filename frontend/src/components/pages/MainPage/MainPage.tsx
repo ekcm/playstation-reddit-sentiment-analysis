@@ -49,7 +49,7 @@ interface TopPostsResponse {
 type Tab = 'sentiment' | 'keywords' | 'posts';
 type KeywordSentiment = 'all' | 'positive' | 'negative' | 'neutral';
 
-const BASE_URL = 'http://0.0.0.0:8000';
+const BASE_URL = 'http://localhost:8000';
 
 const MainPage = () => {
   const [loading, setLoading] = useState(false);

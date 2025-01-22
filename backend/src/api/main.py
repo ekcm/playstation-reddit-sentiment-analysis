@@ -29,7 +29,7 @@ class Sentiment(str, Enum):
 # Constants
 DATE_FORMAT = "%Y-%m-%d"
 DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
-DATA_FILE = Path("../../data/analyzed/analyzed_reddit_data.json")
+DATA_FILE = Path("/app/data/analyzed/analyzed_reddit_data.json")
 
 @lru_cache()
 def load_sentiment_data() -> list:
@@ -38,9 +38,9 @@ def load_sentiment_data() -> list:
         with open(DATA_FILE, 'r') as file:
             return json.load(file)
     except FileNotFoundError:
-        raise HTTPException(status_code=404, message="Sentiment data file not found")
+        raise HTTPException(status_code=404, detail="Sentiment data file not found")
     except json.JSONDecodeError:
-        raise HTTPException(status_code=500, message="Error parsing sentiment data")
+        raise HTTPException(status_code=500, detail="Error parsing sentiment data")
 
 def parse_date(date_str: Optional[str], is_end_date: bool = False) -> Optional[float]:
     """Parse date string to timestamp with validation."""
