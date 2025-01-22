@@ -61,15 +61,11 @@ poetry install --no-root # Skip installing the project itself
 log "Scraping Reddit data"
 run_python_script "scraping" "reddit_scraper.py"
 
-# Step 3: Export MongoDB data
-log "Exporting MongoDB data"
-run_python_script "processing" "database_handler.py"
-
-# Step 4: Process Reddit data
+# Step 3: Process Reddit data
 log "Processing Reddit data"
 run_python_script "processing" "data_cleaner.py"
 
-# Step 5: Ensure Ollama is running and run sentiment analysis
+# Step 4: Ensure Ollama is running and run sentiment analysis
 log "Checking Ollama service"
 check_ollama
 

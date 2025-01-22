@@ -1,8 +1,7 @@
 import praw
 import os
+import json
 from dotenv import load_dotenv
-from database_handler import insert_reddit_post, check_post_exists
-import sys
 from pathlib import Path
 
 # Get the backend directory
@@ -29,8 +28,34 @@ def process_comment(comment):
 def get_thelastofus_posts():
     subreddit = reddit.subreddit("thelastofus")
     query = 'review' # Look for posts that include the word 'review'
-
+    
+    # Create data directories if they don't exist
+    data_dir = backend_dir / "data"
+    raw_dir = data_dir / "raw"
+    raw_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Load existing data if file exists
+    json_file = raw_dir / "reddit_data.json"
+    existing_posts = []
+    if json_file.exists():
+        try:
+            with open(json_file, 'r') as f:
+                existing_posts = json.load(f)
+                if not isinstance(existing_posts, list):
+                    existing_posts = [existing_posts]  # Convert single post to list
+        except json.JSONDecodeError:
+            print("Error reading JSON file, starting with empty list")
+            existing_posts = []
+    
+    # Get existing post IDs
+    existing_ids = {post.get('id') for post in existing_posts if isinstance(post, dict)}
+    
     for submission in subreddit.search(query, sort='relevance', time_filter='all', limit=1):
+        # Skip if post already exists
+        if submission.id in existing_ids:
+            print(f"Post with ID {submission.id} already exists. Skipping...")
+            continue
+            
         reddit_post = {
             "id": submission.id,
             "title": submission.title,
@@ -40,18 +65,17 @@ def get_thelastofus_posts():
             "comments": []
         }
 
-        # check if id already exists in database
-        if check_post_exists(submission.id):
-            print(f"Post with ID {submission.id} already exists in database. Skipping...")
-            continue
-
         # Get all comments including replies
         submission.comments.replace_more(limit=None)
         reddit_post["comments"] = [process_comment(comment) for comment in submission.comments if isinstance(comment, praw.models.Comment)]
 
-        # Insert into MongoDB
-        inserted_id = insert_reddit_post(reddit_post)
-        if inserted_id:
-            print(f"Successfully stored Reddit post in MongoDB with _id: {inserted_id}")
+        # Add new post to existing posts
+        existing_posts.append(reddit_post)
+        
+        # Save all posts to JSON file
+        with open(json_file, 'w', encoding='utf-8') as f:
+            json.dump(existing_posts, f, ensure_ascii=False, indent=2)
+        print(f"Successfully stored Reddit post with ID: {submission.id}")
 
-get_thelastofus_posts()
+if __name__ == "__main__":
+    get_thelastofus_posts()
