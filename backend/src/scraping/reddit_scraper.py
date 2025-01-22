@@ -50,7 +50,7 @@ def get_thelastofus_posts():
     # Get existing post IDs
     existing_ids = {post.get('id') for post in existing_posts if isinstance(post, dict)}
     
-    for submission in subreddit.search(query, sort='relevance', time_filter='all', limit=1):
+    for submission in subreddit.search(query, sort='relevance', time_filter='all', limit=30):  # change the limit as needed
         # Skip if post already exists
         if submission.id in existing_ids:
             print(f"Post with ID {submission.id} already exists. Skipping...")
