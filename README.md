@@ -48,3 +48,17 @@ docker-compose up --build
 You can access the frontend from `http://localhost:3000/`, which will visualize the insights generated from r/thelastofus subreddit.
 
 ## Screenshots
+<details>
+  <summary>Sentiment Analysis over time</summary>
+  <img width="1405" alt="image" src="https://github.com/user-attachments/assets/b9ba0823-d447-457b-8b61-b93729c66620" />
+</details>
+
+<details>
+  <summary>Keyword Frequency</summary>
+  <img width="1405" alt="image" src="https://github.com/user-attachments/assets/f596afdb-50b5-4ca1-84ba-452427b2d40b" />
+</details>
+
+<details>
+  <summary>Top Posts</summary>
+  <img width="1405" alt="image" src="https://github.com/user-attachments/assets/77d9a7eb-af82-42fe-9269-818c05184871" />
+</details>
